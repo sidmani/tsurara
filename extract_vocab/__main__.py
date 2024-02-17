@@ -4,21 +4,15 @@ import argparse
 import srt
 from pathlib import Path
 from jamdict import Jamdict
-from simple_term_menu import TerminalMenu
 import csv
 from .filter import filter_word_list
 from .util import to_unique_key
+from .interface import show_tmenu, MainOptions, show_main_options
 
 
 def save_json(data, file_path):
     with open(file_path, "w") as file:
         json.dump(data, file, indent=4)
-
-
-def file_to_string(file_path):
-    with open(file_path, "r") as file:
-        file_content = file.read()
-        return file_content
 
 
 def process_srt(srt_contents):
@@ -30,15 +24,6 @@ def process_srt(srt_contents):
 
 
 FILE_PATH = "./data.json"
-
-
-def show_tmenu(options, title, multi_select=False):
-    menu = TerminalMenu(
-        options, title=title, multi_select=multi_select, raise_error_on_interrupt=True
-    )
-    idx = menu.show()
-    return options, idx
-
 
 if __name__ == "__main__":
     try:
@@ -53,7 +38,8 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", help="Path to the output file")
     args = parser.parse_args()
     input_path = Path(args.input)
-    file_contents = file_to_string(input_path)
+    with open(input_path, "r") as file:
+        file_contents = file.read()
 
     if input_path.suffix == ".srt":
         processed_contents = process_srt(file_contents)
@@ -71,52 +57,29 @@ if __name__ == "__main__":
     for word in words:
         count += 1
         data = jam.lookup(word.feature.lemma)
-        if len(data.entries) == 0:
-            continue
 
-        options, idx = show_tmenu(
-            [
-                "[k] known",
-                "[r] reveal meaning",
-                "[a] add",
-                "[s] skip",
-                "[i] ignore",
-                "[q] quit",
-            ],
+        option = show_main_options(
             f"{count}/{len(words)} {word.feature.lemma}",
+            f"({data.entries[0].kana_forms[0]}) - {data.entries[0].senses[0].text()}",
         )
 
-        option = options[idx]
-        if option == "[r] reveal meaning":
-            options, idx = show_tmenu(
-                [
-                    "[k] known",
-                    "[a] add",
-                    "[s] skip",
-                    "[i] ignore",
-                    "[q] quit",
-                ],
-                f"{count}/{len(words)} {word.feature.lemma} ({data.entries[0].kana_forms[0]}) - {data.entries[0].senses[0].text()}",
-            )
-        option = options[idx]
-
-        if option == "[s] skip":
+        if option == MainOptions.Skip:
             continue
 
-        if option == "[q] quit":
+        if option == MainOptions.Quit:
             break
 
-        if option == "[i] ignore":
+        if option == MainOptions.Ignore:
             json_data["ignore"][to_unique_key(word)] = True
             save_json(json_data, FILE_PATH)
             continue
 
         json_data["seen"][to_unique_key(word)] = True
 
-        if option == "[k] known":
+        if option == MainOptions.Known:
             save_json(json_data, FILE_PATH)
             continue
-        if option == "[a] add":
+        if option == MainOptions.Add:
             if len(data.entries) == 1:
                 entry = data.entries[0]
             else:

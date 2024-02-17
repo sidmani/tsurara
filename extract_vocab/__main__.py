@@ -8,6 +8,7 @@ import csv
 from .filter import filter_word_list
 from .util import to_unique_key
 from .interface import select_word_forms, show_tmenu, MainOptions, show_main_options
+from .frequency import FrequencyTable
 
 
 def save_json(data, file_path):
@@ -50,10 +51,12 @@ if __name__ == "__main__":
     jam = Jamdict()
 
     words = filter_word_list(tagger(processed_contents), json_data, jam)
+    freq_table = FrequencyTable("./jp_freq.csv")
+    words = freq_table.sorted(words)
 
     print(f"{len(words)} unknown words found.")
-    count = 0
 
+    count = 0
     for word in words:
         count += 1
         data = jam.lookup(word.feature.lemma)
@@ -63,18 +66,14 @@ if __name__ == "__main__":
             f"({data.entries[0].kana_forms[0]}) - {data.entries[0].senses[0].text()}",
         )
 
-        if option == MainOptions.Skip:
-            continue
-        elif option == MainOptions.Quit:
+        if option == MainOptions.Quit:
             break
         elif option == MainOptions.Ignore:
             json_data["ignore"][to_unique_key(word)] = True
             save_json(json_data, FILE_PATH)
-            continue
         elif option == MainOptions.Known:
             json_data["seen"][to_unique_key(word)] = True
             save_json(json_data, FILE_PATH)
-            continue
         elif option == MainOptions.Add:
             (kanji, kana, sense) = select_word_forms(word, data)
             json_data["seen"][to_unique_key(word)] = True

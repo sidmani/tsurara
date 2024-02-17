@@ -12,8 +12,8 @@ from .frequency import FrequencyTable
 
 
 def save_json(data, file_path):
-    with open(file_path, "w") as file:
-        json.dump(data, file, indent=4)
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
 
 
 def process_srt(srt_contents):

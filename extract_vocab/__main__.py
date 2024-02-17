@@ -7,7 +7,7 @@ from jamdict import Jamdict
 import csv
 from .filter import filter_word_list
 from .util import to_unique_key
-from .interface import select_word_forms, show_tmenu, MainOptions, show_main_options
+from .interface import select_word_forms, MainOptions, show_main_options
 from .frequency import FrequencyTable
 
 
@@ -35,8 +35,8 @@ if __name__ == "__main__":
         save_json(json_data, FILE_PATH)
 
     parser = argparse.ArgumentParser(description="Process an input file.")
-    parser.add_argument("-i", "--input", help="Path to the input file")
-    parser.add_argument("-o", "--output", help="Path to the output file")
+    parser.add_argument("-i", "--input", help="Path to the input file", required=True)
+    parser.add_argument("-o", "--output", help="Path to the output csv", required=True)
     args = parser.parse_args()
     input_path = Path(args.input)
     with open(input_path, "r") as file:

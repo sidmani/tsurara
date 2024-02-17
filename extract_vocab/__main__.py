@@ -1,12 +1,13 @@
 import json
 import fugashi
-from tqdm import tqdm
 import argparse
 import srt
 from pathlib import Path
 from jamdict import Jamdict
 from simple_term_menu import TerminalMenu
 import csv
+from .filter import filter_word_list
+from .util import to_unique_key
 
 
 def save_json(data, file_path):
@@ -28,12 +29,7 @@ def process_srt(srt_contents):
     return result
 
 
-BASE_EXCLUDE_LIST = {"　", "．"}
 FILE_PATH = "./data.json"
-
-
-def to_unique_key(word):
-    return ",".join((word.feature.lemma, word.feature.pos1))
 
 
 def show_tmenu(options, title, multi_select=False):
@@ -67,38 +63,7 @@ if __name__ == "__main__":
     tagger = fugashi.Tagger()
     jam = Jamdict()
 
-    dupes = set()
-    words = []
-    for word in tqdm(tagger(processed_contents)):
-        if (
-            word.feature.pos1 == "助詞"
-            or word.feature.pos1 == "代名詞"
-            or word.feature.pos1 == "感動詞"
-            or word.feature.pos1 == "助動詞"
-            or word.feature.pos1 == "接尾辞"
-            or word.feature.pos1 == "補助記号"
-            or word.feature.pos2 == "数詞"
-            or word.feature.pos3 == "人名"
-            or word.feature.pos3 == "地名"
-            or word.surface in BASE_EXCLUDE_LIST
-            or word.feature.lemma is None
-        ):
-            continue
-
-        unique_key = to_unique_key(word)
-        if (
-            unique_key in dupes
-            or unique_key in json_data["seen"]
-            or unique_key in json_data["ignore"]
-        ):
-            continue
-
-        dupes.add(unique_key)
-        data = jam.lookup(word.feature.lemma)
-        if len(data.entries) == 0:
-            continue
-
-        words.append(word)
+    words = filter_word_list(tagger(processed_contents), json_data, jam)
 
     print(f"{len(words)} unknown words found.")
     count = 0

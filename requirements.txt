@@ -6,7 +6,7 @@ idna==3.6
 jamdict==0.1a11.post2
 jamdict_data==1.5
 plac==1.4.2
-puchikarui==0.1
+puchikarui @ git+https://github.com/letuananh/puchikarui@6616d6fb9f131f2489ee3067fd981a19943e095f
 requests==2.31.0
 simple-term-menu==1.6.4
 srt==3.5.3

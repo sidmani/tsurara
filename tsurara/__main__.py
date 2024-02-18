@@ -26,13 +26,30 @@ def process_srt(srt_contents):
 
 FILE_PATH = "./data.json"
 
+
+def apply_migrations(json_data):
+    if "version" not in json_data:
+        print("Migrating stored data (v0 -> v1).")
+        # migrate from old unique key to pure lemma
+        for group in {"seen", "ignore"}:
+            for k in list(json_data[group].keys()):
+                del json_data[group][k]
+                new_k = k.split(",")[0]
+                json_data[group][new_k] = True
+
+        json_data["version"] = 1
+        save_json(json_data, FILE_PATH)
+
+
 if __name__ == "__main__":
     try:
         with open(FILE_PATH, "r") as file:
             json_data = json.load(file)
     except FileNotFoundError:
-        json_data = {"seen": {}, "ignore": {}}
+        json_data = {"seen": {}, "ignore": {}, "version": 1}
         save_json(json_data, FILE_PATH)
+
+    apply_migrations(json_data)
 
     parser = argparse.ArgumentParser(description="Process an input file.")
     parser.add_argument("-i", "--input", help="Path to the input file", required=True)

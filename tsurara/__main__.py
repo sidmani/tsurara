@@ -1,28 +1,13 @@
 import json
 import fugashi
 import argparse
-import srt
 from pathlib import Path
 from jamdict import Jamdict
 import csv
 from .filter import filter_word_list
-from .util import to_unique_key
+from .util import to_unique_key, save_json, process_srt
 from .interface import select_word_forms, MainOptions, show_main_options
 from .frequency import FrequencyTable
-
-
-def save_json(data, file_path):
-    with open(file_path, "w", encoding="utf-8") as file:
-        json.dump(data, file, indent=4, ensure_ascii=False)
-
-
-def process_srt(srt_contents):
-    result = ""
-    for s in srt.parse(srt_contents):
-        result += s.content
-        result += "\n"
-    return result
-
 
 FILE_PATH = "./data.json"
 
@@ -65,7 +50,7 @@ if __name__ == "__main__":
         processed_contents = file_contents
 
     tagger = fugashi.Tagger()
-    jam = Jamdict()
+    jam = Jamdict(memory_mode=True)
 
     words, (seen_count, ignore_count) = filter_word_list(
         tagger(processed_contents), json_data, jam

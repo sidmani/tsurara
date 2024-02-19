@@ -32,16 +32,23 @@ def filter_word_list(words, json_data, jam):
     filtered_words = []
     dupes = set()
 
+    seen_count = 0
+    ignore_count = 0
+
     for word in tqdm(words):
         if filter_condition(word):
             continue
 
         unique_key = to_unique_key(word)
-        if (
-            unique_key in dupes
-            or unique_key in json_data["seen"]
-            or unique_key in json_data["ignore"]
-        ):
+        if unique_key in dupes:
+            continue
+
+        if unique_key in json_data["seen"]:
+            seen_count += 1
+            continue
+
+        if unique_key in json_data["ignore"]:
+            ignore_count += 1
             continue
 
         dupes.add(unique_key)
@@ -51,4 +58,4 @@ def filter_word_list(words, json_data, jam):
 
         filtered_words.append(word)
 
-    return filtered_words
+    return filtered_words, (seen_count, ignore_count)

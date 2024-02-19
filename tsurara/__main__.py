@@ -67,11 +67,15 @@ if __name__ == "__main__":
     tagger = fugashi.Tagger()
     jam = Jamdict()
 
-    words = filter_word_list(tagger(processed_contents), json_data, jam)
+    words, (seen_count, ignore_count) = filter_word_list(
+        tagger(processed_contents), json_data, jam
+    )
     freq_table = FrequencyTable("./jp_freq.csv")
     words = freq_table.sorted(words)
 
-    print(f"{len(words)} unknown words found.")
+    print(
+        f"{len(words) + seen_count + ignore_count} unique words ({len(words)} new/{seen_count} seen/{ignore_count} ignore)"
+    )
 
     count = 0
     for word in words:

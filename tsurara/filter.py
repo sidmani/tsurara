@@ -42,6 +42,7 @@ def filter_word_list(words, json_data, jam):
         unique_key = to_unique_key(word)
         if unique_key in dupes:
             continue
+        dupes.add(unique_key)
 
         if unique_key in json_data["seen"]:
             seen_count += 1
@@ -51,7 +52,6 @@ def filter_word_list(words, json_data, jam):
             ignore_count += 1
             continue
 
-        dupes.add(unique_key)
         data = jam.lookup(word.feature.lemma)
         if len(data.entries) == 0:
             continue

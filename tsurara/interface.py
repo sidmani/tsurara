@@ -29,7 +29,7 @@ def show_main_options(base_str, revealed_str):
     if option == MainOptions.Reveal:
         options, idx = show_tmenu(
             [e.value for e in MainOptions if e != MainOptions.Reveal],
-            f"{base_str} {revealed_str}",
+            f"{base_str}\n{revealed_str}",
         )
         option = MainOptions(options[idx])
 

@@ -78,9 +78,10 @@ if __name__ == "__main__":
         count += 1
         data = jam.lookup(word.feature.lemma)
 
+        meanings = "\n".join(map(lambda e: e.text(), data.entries))
         option = show_main_options(
             f"{count}/{len(words)} {word.feature.lemma}",
-            f"({data.entries[0].kana_forms[0]}) - {data.entries[0].senses[0].text()}",
+            meanings,
         )
 
         if option == MainOptions.Quit:

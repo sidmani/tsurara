@@ -1,3 +1,4 @@
+from pathlib import Path
 from .util import save_json, WordState
 
 
@@ -35,5 +36,15 @@ def apply_migrations(json_data, file_path):
         # add seen_files dict
         json_data["seen_files"] = {}
         json_data["version"] = 3
+        save_json(json_data, file_path)
+
+    if json_data["version"] == 3:
+        new_seen_files = {}
+        for p in json_data["seen_files"].keys():
+            new_seen_files[Path(p).name] = True
+
+        json_data["seen_files"] = new_seen_files
+        json_data["version"] = 4
+        save_json(json_data, file_path)
 
     return (init_version, json_data["version"])

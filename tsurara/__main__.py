@@ -19,7 +19,7 @@ if __name__ == "__main__":
             json_data = json.load(file)
     except FileNotFoundError:
         print(f"Creating new data file at {FILE_PATH}")
-        json_data = {"words": {}, "seen_files": {}, "version": 3}
+        json_data = {"words": {}, "seen_files": {}, "version": 4}
         save_json(json_data, FILE_PATH)
 
     (old_version, new_version) = apply_migrations(json_data, FILE_PATH)
@@ -51,10 +51,10 @@ if __name__ == "__main__":
 
     unfiltered_words = list(tagger(processed_contents))
     if args.save_frequency:
-        if args.input not in json_data["seen_files"]:
+        if input_path.name not in json_data["seen_files"]:
             freq_table.add_words(map(lambda w: w.feature.lemma, unfiltered_words))
             freq_table.save_data()
-            json_data["seen_files"][args.input] = True
+            json_data["seen_files"][input_path.name] = True
             save_json(json_data, FILE_PATH)
             print("Updated frequency data.")
         else:

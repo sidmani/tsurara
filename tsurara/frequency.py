@@ -1,19 +1,25 @@
-import csv
+import json
+from .util import save_json
 
 
 class FrequencyTable:
     def __init__(self, path):
-        with open(path, newline="") as csvfile:
-            self.freq = {}
-            csv_reader = csv.reader(csvfile)
-            for row in csv_reader:
-                self.freq[row[2]] = int(row[1])
+        with open(path, "r") as file:
+            self.data = json.load(file)
+        self.path = path
 
     def word_to_freq(self, word):
-        if word.feature.lemma in self.freq:
-            return self.freq[word.feature.lemma]
+        if word in self.data["words"]:
+            return self.data["words"][word]
 
         return 0
 
-    def sorted(self, words):
-        return sorted(words, key=lambda w: self.word_to_freq(w), reverse=True)
+    def add_words(self, words):
+        for word in words:
+            if word in self.data["words"]:
+                self.data["words"][word] += 1
+            else:
+                self.data["words"][word] = 1
+
+    def save_data(self):
+        save_json(self.data, self.path)

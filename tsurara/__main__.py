@@ -8,57 +8,33 @@ from .filter import filter_word_list
 from .util import to_unique_key, save_json, process_srt, WordState
 from .interface import select_word_forms, MainOptions, show_main_options
 from .frequency import FrequencyTable
+from .migrations import apply_migrations
 
-FILE_PATH = "./data.json"
-
-
-def apply_migrations(json_data):
-    if "version" not in json_data:
-        init_version = 0
-        # migrate from old unique key to pure lemma
-        for group in {"seen", "ignore"}:
-            for k in list(json_data[group].keys()):
-                del json_data[group][k]
-                new_k = k.split(",")[0]
-                json_data[group][new_k] = True
-
-        json_data["version"] = 1
-        save_json(json_data, FILE_PATH)
-    else:
-        init_version = json_data["version"]
-
-    if json_data["version"] == 1:
-        # migrate to version 2, which stores everything as one dictionary
-        new_dict = {}
-        for word in json_data["seen"]:
-            new_dict[word] = WordState.Seen
-
-        for word in json_data["ignore"]:
-            new_dict[word] = WordState.Ignore
-
-        json_data["words"] = new_dict
-        del json_data["seen"]
-        del json_data["ignore"]
-        json_data["version"] = 2
-        save_json(json_data, FILE_PATH)
-
-    if init_version != json_data["version"]:
-        print(f"Migrated stored data (v{init_version} -> v{json_data['version']}).")
-
+FILE_PATH = "data.json"
+FREQUENCY_DATA_PATH = "jp_freq.json"
 
 if __name__ == "__main__":
     try:
         with open(FILE_PATH, "r") as file:
             json_data = json.load(file)
     except FileNotFoundError:
-        json_data = {"words": {}, "version": 2}
+        print(f"Creating new data file at {FILE_PATH}")
+        json_data = {"words": {}, "seen_files": {}, "version": 3}
         save_json(json_data, FILE_PATH)
 
-    apply_migrations(json_data)
+    (old_version, new_version) = apply_migrations(json_data, FILE_PATH)
+    if old_version != new_version:
+        print(f"Migrated stored data (v{old_version} -> v{new_version}).")
 
     parser = argparse.ArgumentParser(description="Process an input file.")
     parser.add_argument("-i", "--input", help="Path to the input file", required=True)
     parser.add_argument("-o", "--output", help="Path to the output csv", required=True)
+    parser.add_argument(
+        "-f",
+        "--save-frequency",
+        help="Update the frequency table with the current subtitle file's frequency data",
+        action="store_true",
+    )
     args = parser.parse_args()
     input_path = Path(args.input)
     with open(input_path, "r") as file:
@@ -71,12 +47,25 @@ if __name__ == "__main__":
 
     tagger = fugashi.Tagger()
     jam = Jamdict(memory_mode=True)
+    freq_table = FrequencyTable(FREQUENCY_DATA_PATH)
+
+    unfiltered_words = list(tagger(processed_contents))
+    if args.save_frequency:
+        if args.input not in json_data["seen_files"]:
+            freq_table.add_words(map(lambda w: w.feature.lemma, unfiltered_words))
+            freq_table.save_data()
+            json_data["seen_files"][args.input] = True
+            save_json(json_data, FILE_PATH)
+            print("Updated frequency data.")
+        else:
+            print("Not updating frequency data with known file.")
 
     words, (seen_count, ignore_count) = filter_word_list(
-        tagger(processed_contents), json_data, jam
+        unfiltered_words, json_data, jam
     )
-    freq_table = FrequencyTable("./jp_freq.csv")
-    words = freq_table.sorted(words)
+    words = sorted(
+        words, key=lambda w: freq_table.word_to_freq(w.feature.lemma), reverse=True
+    )
 
     print(
         f"{len(words) + seen_count + ignore_count} unique words ({len(words)} new/{seen_count} seen/{ignore_count} ignore)"

@@ -1,5 +1,11 @@
 import json
 import srt
+from enum import Enum
+
+
+class WordState(str, Enum):
+    Seen = "seen"
+    Ignore = "ignore"
 
 
 def to_unique_key(word):

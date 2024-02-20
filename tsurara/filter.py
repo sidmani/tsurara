@@ -1,5 +1,5 @@
 from tqdm import tqdm
-from .util import to_unique_key
+from .util import to_unique_key, WordState
 
 BASE_EXCLUDE_LIST = {"　", "．"}
 
@@ -44,13 +44,13 @@ def filter_word_list(words, json_data, jam):
             continue
         dupes.add(unique_key)
 
-        if unique_key in json_data["seen"]:
-            seen_count += 1
-            continue
-
-        if unique_key in json_data["ignore"]:
-            ignore_count += 1
-            continue
+        if unique_key in json_data["words"]:
+            if json_data["words"][unique_key] == WordState.Seen:
+                seen_count += 1
+                continue
+            elif json_data["words"][unique_key] == WordState.Ignore:
+                ignore_count += 1
+                continue
 
         data = jam.lookup(word.feature.lemma)
         if len(data.entries) == 0:

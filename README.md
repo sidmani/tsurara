@@ -2,7 +2,7 @@
 
 1. `pip install -r requirements.txt`
 2. `python -m unidic download` (downloads a 500MB dictionary file)
-3. `python -m tsurara -i subtitle_file.srt -o output_file.csv`
+3. `python -m tsurara review -i subtitle_file.srt -o output_file.csv`
 
 This will:
 

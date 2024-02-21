@@ -12,7 +12,7 @@ This will:
 - sort the words in descending order of frequency of appearance in Wikipedia
 - drop you into the main loop that iterates over words
 
-While in the loop, tsurara incrementally saves data to a file called `data.json` (which you don't need to touch) and your specified output csv. Even if you exit at any point, your progress until that point is saved.
+While in the loop, tsurara incrementally saves data to a file called `.tsurara.json` in your home directory (which you don't need to touch) and your specified output csv. Even if you exit at any point, your progress until that point is saved.
 
 In the main loop, you have the following options:
 

@@ -5,8 +5,8 @@ from jamdict import Jamdict
 import csv
 
 from .datastore import Datastore
-from .filter import filter_word_list
-from .util import to_unique_key, save_json, process_srt, WordState
+from .filter import dedupe_word_list, filter_non_words
+from .util import to_unique_key, process_srt, WordState
 from .interface import select_word_forms, MainOptions, show_main_options
 from .frequency import FrequencyTable
 
@@ -28,10 +28,10 @@ def cmd_review(args, datastore: Datastore):
     jam = Jamdict(memory_mode=True)
     freq_table = FrequencyTable(FREQUENCY_DATA_PATH)
 
-    unfiltered_words = list(tagger(processed_contents))
+    words = filter_non_words(tagger(processed_contents), datastore, freq_table, jam)
     if args.save_frequency:
         if not datastore.has_seen_file(input_path.name):
-            freq_table.add_words(map(lambda w: w.feature.lemma, unfiltered_words))
+            freq_table.add_words(map(lambda w: w.feature.lemma, words))
             freq_table.save_data()
             datastore.add_seen_file(input_path.name)
             datastore.save()
@@ -39,9 +39,7 @@ def cmd_review(args, datastore: Datastore):
         else:
             print("Not updating frequency data with known file.")
 
-    words, (seen_count, ignore_count) = filter_word_list(
-        unfiltered_words, datastore, jam
-    )
+    words, (seen_count, ignore_count) = dedupe_word_list(words, datastore)
     words = sorted(
         words, key=lambda w: freq_table.word_to_freq(w.feature.lemma), reverse=True
     )

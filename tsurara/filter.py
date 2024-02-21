@@ -28,17 +28,38 @@ def filter_condition(word):
     )
 
 
-def filter_word_list(words, datastore, jam):
+def filter_non_words(words, datastore, freq_table, jam):
+    result = []
+    known_ok = set()
+    for word in tqdm(words):
+        unique_key = to_unique_key(word)
+        if unique_key in known_ok:
+            result.append(word)
+            continue
+
+        if filter_condition(word):
+            continue
+
+        # if the word is in the datastore or it's in the frequency table
+        # it's known valid, so skip the slow dictionary lookup
+        if (
+            datastore.get_word_state(to_unique_key(word)) is not None
+            or freq_table.word_to_freq(word) > 0
+            or len(jam.lookup(word.feature.lemma).entries) > 0
+        ):
+            known_ok.add(unique_key)
+            result.append(word)
+    return result
+
+
+def dedupe_word_list(words, datastore):
     filtered_words = []
     dupes = set()
 
     seen_count = 0
     ignore_count = 0
 
-    for word in tqdm(words):
-        if filter_condition(word):
-            continue
-
+    for word in words:
         unique_key = to_unique_key(word)
         if unique_key in dupes:
             continue
@@ -52,10 +73,6 @@ def filter_word_list(words, datastore, jam):
             elif word_state == WordState.Ignore:
                 ignore_count += 1
                 continue
-
-        data = jam.lookup(word.feature.lemma)
-        if len(data.entries) == 0:
-            continue
 
         filtered_words.append(word)
 

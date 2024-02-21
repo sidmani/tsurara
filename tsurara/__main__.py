@@ -1,8 +1,9 @@
 import argparse
+from pathlib import Path
 from .datastore import Datastore
 from .review import cmd_review
 
-FILE_PATH = "data.json"
+FILE_PATH = Path.home() / Path(".tsurara.json")
 
 
 def main():

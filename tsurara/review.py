@@ -30,14 +30,11 @@ def cmd_review(args, datastore: Datastore):
 
     unfiltered_words = list(tagger(processed_contents))
     if args.save_frequency:
-        # if input_path.name not in json_data["seen_files"]:
         if not datastore.has_seen_file(input_path.name):
             freq_table.add_words(map(lambda w: w.feature.lemma, unfiltered_words))
             freq_table.save_data()
-            # json_data["seen_files"][input_path.name] = True
             datastore.add_seen_file(input_path.name)
             datastore.save()
-            # save_json(json_data, FILE_PATH)
             print("Updated frequency data.")
         else:
             print("Not updating frequency data with known file.")
@@ -67,19 +64,13 @@ def cmd_review(args, datastore: Datastore):
         if option == MainOptions.Quit:
             break
         elif option == MainOptions.Ignore:
-            # json_data["words"][to_unique_key(word)] = WordState.Ignore
             datastore.set_word_state(to_unique_key(word), WordState.Ignore)
             datastore.save()
-            # save_json(json_data, FILE_PATH)
         elif option == MainOptions.Known:
             datastore.set_word_state(to_unique_key(word), WordState.Seen)
             datastore.save()
-            # json_data["words"][to_unique_key(word)] = WordState.Seen
-            # save_json(json_data, FILE_PATH)
         elif option == MainOptions.Add:
             (kanji, kana, sense) = select_word_forms(word, data)
-            # json_data["words"][to_unique_key(word)] = WordState.Seen
-            # save_json(json_data, FILE_PATH)
             datastore.set_word_state(to_unique_key(word), WordState.Seen)
             datastore.save()
             with open(args.output, "a", newline="") as csvfile:

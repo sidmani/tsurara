@@ -9,6 +9,9 @@ class Datastore:
             with open(path, "r") as file:
                 self.data = json.load(file)
         except FileNotFoundError:
+            print(
+                "WARNING: the default location for the data file changed to ~/.tsurara.json. You might need to move your data manually."
+            )
             print(f"Creating new data file at {path}")
             self.data = {"words": {}, "seen_files": {}, "version": 4}
             save_json(self.data, path)
@@ -69,6 +72,7 @@ class Datastore:
             self.save()
 
         if self.data["version"] == 3:
+            # seen files use filename instead of full path
             new_seen_files = {}
             for p in self.data["seen_files"].keys():
                 new_seen_files[Path(p).name] = True

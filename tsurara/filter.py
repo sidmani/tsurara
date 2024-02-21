@@ -28,7 +28,7 @@ def filter_condition(word):
     )
 
 
-def filter_word_list(words, json_data, jam):
+def filter_word_list(words, datastore, jam):
     filtered_words = []
     dupes = set()
 
@@ -44,11 +44,12 @@ def filter_word_list(words, json_data, jam):
             continue
         dupes.add(unique_key)
 
-        if unique_key in json_data["words"]:
-            if json_data["words"][unique_key] == WordState.Seen:
+        word_state = datastore.get_word_state(unique_key)
+        if word_state is not None:
+            if word_state == WordState.Seen:
                 seen_count += 1
                 continue
-            elif json_data["words"][unique_key] == WordState.Ignore:
+            elif word_state == WordState.Ignore:
                 ignore_count += 1
                 continue
 

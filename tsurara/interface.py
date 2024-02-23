@@ -37,22 +37,27 @@ def show_main_options(base_str, revealed_str):
 
 
 def select_word_forms(word, dic_data):
+    quit = "[q] back to main menu"
     if len(dic_data.entries) == 1:
         entry = dic_data.entries[0]
     else:
-        _, entry_idx = show_tmenu(
-            [e.text() for e in dic_data.entries],
+        options, idx = show_tmenu(
+            [e.text() for e in dic_data.entries] + [quit],
             f"Which entry for {word.feature.lemma} ({dic_data.entries[0].kana_forms[0]})?",
         )
-        entry = dic_data.entries[entry_idx]
+        if options[idx] == quit:
+            return None
+        entry = dic_data.entries[idx]
 
     if len(entry.kana_forms) == 1:
         kana = entry.kana_forms[0].text
     else:
         (options, idx) = show_tmenu(
-            [e.text for e in entry.kana_forms],
+            [e.text for e in entry.kana_forms] + [quit],
             f"Which kana form for {word.feature.lemma} ({entry.kana_forms[0]})?",
         )
+        if options[idx] == quit:
+            return None
         kana = options[idx]
 
     if len(entry.kanji_forms) == 0:
@@ -61,9 +66,11 @@ def select_word_forms(word, dic_data):
         kanji = entry.kanji_forms[0].text
     else:
         (options, idx) = show_tmenu(
-            [e.text for e in entry.kanji_forms] + [kana],
+            [e.text for e in entry.kanji_forms] + [kana] + [quit],
             f"Which kanji form for {word.feature.lemma} ({kana})?",
         )
+        if options[idx] == quit:
+            return None
         kanji = options[idx]
 
     glosses = [g.text for s in entry.senses for g in s.gloss]

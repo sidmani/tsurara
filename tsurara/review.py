@@ -48,14 +48,15 @@ def cmd_review(args, datastore: Datastore):
         f"{len(words) + seen_count + ignore_count} unique words ({len(words)} new/{seen_count} seen/{ignore_count} ignore)"
     )
 
-    count = 0
-    for word in words:
-        count += 1
+    idx = -1
+    while idx < len(words) - 1:
+        idx += 1
+        word = words[idx]
         data = jam.lookup(word.feature.lemma)
 
         meanings = "\n".join(map(lambda e: e.text(), data.entries))
         option = show_main_options(
-            f"{count}/{len(words)} {word.feature.lemma}",
+            f"{idx + 1}/{len(words)} {word.feature.lemma}",
             meanings,
         )
 
@@ -68,7 +69,12 @@ def cmd_review(args, datastore: Datastore):
             datastore.set_word_state(to_unique_key(word), WordState.Seen)
             datastore.save()
         elif option == MainOptions.Add:
-            (kanji, kana, sense) = select_word_forms(word, data)
+            result = select_word_forms(word, data)
+            if result is None:
+                idx -= 1
+                continue
+
+            (kanji, kana, sense) = result
             datastore.set_word_state(to_unique_key(word), WordState.Seen)
             datastore.save()
             with open(args.output, "a", newline="") as csvfile:

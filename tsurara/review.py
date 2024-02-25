@@ -8,10 +8,6 @@ from .datastore import Datastore
 from .filter import dedupe_word_list, filter_non_words
 from .util import to_unique_key, process_srt, WordState
 from .interface import select_word_forms, MainOptions, show_main_options
-from .frequency import FrequencyTable
-
-
-FREQUENCY_DATA_PATH = "jp_freq.json"
 
 
 def cmd_review(args, datastore: Datastore):
@@ -26,13 +22,11 @@ def cmd_review(args, datastore: Datastore):
 
     tagger = fugashi.Tagger()
     jam = Jamdict(memory_mode=True)
-    freq_table = FrequencyTable(FREQUENCY_DATA_PATH)
 
-    words = filter_non_words(tagger(processed_contents), datastore, freq_table, jam)
+    words = filter_non_words(tagger(processed_contents), datastore, jam)
     if args.save_frequency:
         if not datastore.has_seen_file(input_path.name):
-            freq_table.add_words(map(lambda w: w.feature.lemma, words))
-            freq_table.save_data()
+            datastore.add_words_to_freq(map(lambda w: w.feature.lemma, words))
             datastore.add_seen_file(input_path.name)
             datastore.save()
             print("Updated frequency data.")
@@ -41,7 +35,7 @@ def cmd_review(args, datastore: Datastore):
 
     words, (seen_count, ignore_count) = dedupe_word_list(words, datastore)
     words = sorted(
-        words, key=lambda w: freq_table.word_to_freq(w.feature.lemma), reverse=True
+        words, key=lambda w: datastore.word_to_freq(w.feature.lemma), reverse=True
     )
 
     print(

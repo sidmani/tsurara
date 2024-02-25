@@ -28,7 +28,7 @@ def filter_condition(word):
     )
 
 
-def filter_non_words(words, datastore, freq_table, jam):
+def filter_non_words(words, datastore, jam):
     result = []
     known_ok = set()
     for word in tqdm(words):
@@ -44,7 +44,7 @@ def filter_non_words(words, datastore, freq_table, jam):
         # it's known valid, so skip the slow dictionary lookup
         if (
             datastore.get_word_state(to_unique_key(word)) is not None
-            or freq_table.word_to_freq(word) > 0
+            or datastore.word_to_freq(word) > 0
             or len(jam.lookup(word.feature.lemma).entries) > 0
         ):
             known_ok.add(unique_key)

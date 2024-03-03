@@ -40,6 +40,9 @@ class Datastore:
             return self.data["words"][word]
         return None
 
+    def get_words(self):
+        return self.data["words"]
+
     def add_seen_file(self, filename):
         self.data["seen_files"][filename] = True
 

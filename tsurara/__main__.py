@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 from .datastore import Datastore
 from .review import cmd_review
+from .stats import cmd_stats
 
 FILE_PATH = Path.home() / Path(".tsurara.json")
 
@@ -29,6 +30,10 @@ def main():
         action="store_true",
     )
     parser_review.set_defaults(func=lambda args: cmd_review(args, data))
+
+    # stats
+    parser_stats = subparsers.add_parser("stats", help="show stats")
+    parser_stats.set_defaults(func=lambda args: cmd_stats(args, data))
 
     args = parser.parse_args()
     args.func(args)

@@ -9,7 +9,7 @@ This will:
 - parse the subtitle file
 - tokenize the Japanese text into words
 - filter out words that you probably don't care about (particles, proper nouns, suffixes, etc.)
-- sort the words in descending order of frequency of appearance in Wikipedia
+- sort the words in descending order of frequency of appearance in an anime dataset
 - drop you into the main loop that iterates over words
 
 While in the loop, tsurara incrementally saves data to a file called `.tsurara.json` in your home directory (which you don't need to touch) and your specified output csv. Even if you exit at any point, your progress until that point is saved.

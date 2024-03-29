@@ -52,7 +52,7 @@ def filter_non_words(words, datastore, jam):
     return result
 
 
-def dedupe_word_list(words, datastore):
+def dedupe_word_list(words: list[str], datastore):
     filtered_words = []
     dupes = set()
 
@@ -60,12 +60,11 @@ def dedupe_word_list(words, datastore):
     ignore_count = 0
 
     for word in words:
-        unique_key = to_unique_key(word)
-        if unique_key in dupes:
+        if word in dupes:
             continue
-        dupes.add(unique_key)
+        dupes.add(word)
 
-        word_state = datastore.get_word_state(unique_key)
+        word_state = datastore.get_word_state(word)
         if word_state is not None:
             if word_state == WordState.Seen:
                 seen_count += 1

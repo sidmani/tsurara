@@ -18,10 +18,16 @@ def main():
     # review
     parser_review = subparsers.add_parser("review", help="review words in a file")
     parser_review.add_argument(
-        "-i", "--input", help="Path to the input file", required=True
+        "-i",
+        "--input",
+        help="Path to the input file",
     )
+    parser_review.add_argument("-o", "--output", help="Path to the output csv")
     parser_review.add_argument(
-        "-o", "--output", help="Path to the output csv", required=True
+        "-s",
+        "--stored",
+        help="Review stored words in the frequency table",
+        action="store_true",
     )
     parser_review.add_argument(
         "-f",

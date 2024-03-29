@@ -43,6 +43,9 @@ class Datastore:
     def get_words(self):
         return self.data["words"]
 
+    def get_freq(self) -> dict[str, int]:
+        return self.data["frequency"]
+
     def add_seen_file(self, filename):
         self.data["seen_files"][filename] = True
 

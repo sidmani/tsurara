@@ -36,14 +36,14 @@ def show_main_options(base_str, revealed_str):
     return option
 
 
-def select_word_forms(word, dic_data):
+def select_word_forms(word: str, dic_data):
     quit = "[q] back to main menu"
     if len(dic_data.entries) == 1:
         entry = dic_data.entries[0]
     else:
         options, idx = show_tmenu(
             [e.text() for e in dic_data.entries] + [quit],
-            f"Which entry for {word.feature.lemma} ({dic_data.entries[0].kana_forms[0]})?",
+            f"Which entry for {word} ({dic_data.entries[0].kana_forms[0]})?",
         )
         if options[idx] == quit:
             return None
@@ -54,7 +54,7 @@ def select_word_forms(word, dic_data):
     else:
         (options, idx) = show_tmenu(
             [e.text for e in entry.kana_forms] + [quit],
-            f"Which kana form for {word.feature.lemma} ({entry.kana_forms[0]})?",
+            f"Which kana form for {word} ({entry.kana_forms[0]})?",
         )
         if options[idx] == quit:
             return None
@@ -67,7 +67,7 @@ def select_word_forms(word, dic_data):
     else:
         (options, idx) = show_tmenu(
             [e.text for e in entry.kanji_forms] + [kana] + [quit],
-            f"Which kanji form for {word.feature.lemma} ({kana})?",
+            f"Which kanji form for {word} ({kana})?",
         )
         if options[idx] == quit:
             return None
